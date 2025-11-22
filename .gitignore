@@ -1,0 +1,57 @@
+# --------------------
+# Next.js build output
+# --------------------
+.next/
+out/
+dist/
+build/
+
+# Production
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# TypeScript build
+*.tsbuildinfo
+
+# Coverage / Testing
+coverage/
+*.lcov
+
+# Local IDE settings
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Lock files generated during runtime
+*.lock
+*.pid
+
+# Temporary files
+temp/
+tmp/
+
+# Next cache + turbopack 
+.next/cache/
+.next/dev/
