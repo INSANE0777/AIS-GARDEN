@@ -14,18 +14,31 @@ interface PlantedDrawing {
 
 interface GardenDisplayProps {
   plantedDrawings: PlantedDrawing[]
+  onGardenClick?: (x: number, y: number) => void
+  isPlanting?: boolean
 }
 
-export default function GardenDisplay({ plantedDrawings }: GardenDisplayProps) {
+export default function GardenDisplay({ plantedDrawings, onGardenClick, isPlanting = false }: GardenDisplayProps) {
   const [hoveredFlowerId, setHoveredFlowerId] = useState<string | null>(null)
+
+  const handleGardenClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!onGardenClick || !isPlanting) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+
+    onGardenClick(x, y)
+  }
 
   return (
     <div
-      className="relative w-full h-[600px] flex items-center justify-center cursor-default"
+      className={`relative w-full h-[600px] flex items-center justify-center ${isPlanting ? "cursor-crosshair" : "cursor-default"}`}
       style={{
         filter: "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15))",
         animation: "float 4s ease-in-out infinite",
       }}
+      onClick={handleGardenClick}
     >
       <img src="/images/island.png" alt="Garden Island" className="w-full h-full object-contain" />
 

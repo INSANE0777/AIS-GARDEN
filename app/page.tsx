@@ -24,6 +24,8 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null)
   const [supabase] = useState(() => createClient())
   const [channel, setChannel] = useState<RealtimeChannel | null>(null)
+  const [isPlanting, setIsPlanting] = useState(false)
+  const [pendingFlower, setPendingFlower] = useState<string | null>(null)
 
   useEffect(() => {
     const initializeGarden = async () => {
@@ -145,15 +147,16 @@ export default function Home() {
   }
 
   const handlePlantDrawing = (imageData: string, color: string) => {
-    // Generate random position between 10% and 90%
-    const x = Math.floor(Math.random() * 80) + 10
-    const y = Math.floor(Math.random() * 80) + 10
-
-    handlePlantAtPosition(imageData, x, y)
+    setPendingFlower(imageData)
+    setIsPlanting(true)
   }
 
-  if (!userName) {
-    return <NamePrompt onSubmit={handleNameSubmit} />
+  const handleGardenClick = (x: number, y: number) => {
+    if (isPlanting && pendingFlower) {
+      handlePlantAtPosition(pendingFlower, x, y)
+      setIsPlanting(false)
+      setPendingFlower(null)
+    }
   }
 
   const flowerColors = [
@@ -162,10 +165,14 @@ export default function Home() {
     { name: "yellow", value: "#FBBF24" },
     { name: "pink", value: "#F472B6" },
     { name: "green", value: "#15803d" },
+    { name: "purple", value: "#A855F7" },
+    { name: "blue", value: "#3B82F6" },
   ]
 
   return (
     <main className="min-h-screen flex flex-col p-8 relative">
+      {!userName && <NamePrompt onSubmit={handleNameSubmit} />}
+
       <div className="absolute top-8 left-8 z-20">
         <img src="/images/ais.png" alt="AIS Logo" className="h-12 w-auto" />
       </div>
@@ -181,9 +188,16 @@ export default function Home() {
       </p>
 
       <div className="flex gap-20 items-start justify-center flex-1 max-w-full mx-auto relative z-10">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 relative">
+          {isPlanting && (
+            <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-2 rounded-full shadow-lg animate-bounce z-50 font-bold">
+              Click anywhere on the garden to plant! 👇
+            </div>
+          )}
           <GardenDisplay
             plantedDrawings={plantedDrawings}
+            onGardenClick={handleGardenClick}
+            isPlanting={isPlanting}
           />
 
         </div>

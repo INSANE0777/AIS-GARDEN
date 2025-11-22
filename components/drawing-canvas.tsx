@@ -12,6 +12,7 @@ interface DrawingCanvasProps {
 export default function DrawingCanvas({ selectedColor, onPlant }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
@@ -22,6 +23,7 @@ export default function DrawingCanvas({ selectedColor, onPlant }: DrawingCanvasP
     if (!ctx) return
 
     setIsDrawing(true)
+    setErrorMessage(null) // Clear error when starting to draw
     ctx.beginPath()
     ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top)
   }
@@ -52,14 +54,34 @@ export default function DrawingCanvas({ selectedColor, onPlant }: DrawingCanvasP
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const imageData = canvas.toDataURL()
-    onPlant(imageData, selectedColor)
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // Validation: Check if enough pixels are drawn
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+    let coloredPixels = 0
+
+    // Loop through pixels (RGBA)
+    for (let i = 0; i < data.length; i += 4) {
+      // Check alpha channel (index 3)
+      if (data[i + 3] > 0) {
+        coloredPixels++
+      }
+    }
+
+    // Threshold: at least 50 pixels must be drawn
+    if (coloredPixels < 50) {
+      setErrorMessage("This is not a flower")
+      return
+    }
+
+    const dataUrl = canvas.toDataURL()
+    onPlant(dataUrl, selectedColor)
 
     // Clear canvas
-    const ctx = canvas.getContext("2d")
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    setErrorMessage(null)
   }
 
   const handleClear = () => {
@@ -70,22 +92,30 @@ export default function DrawingCanvas({ selectedColor, onPlant }: DrawingCanvasP
     if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
     }
+    setErrorMessage(null)
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Drawing Canvas */}
-      <div className="border-4 border-dashed border-slate-400 rounded-xl overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          width={280}
-          height={280}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          className="bg-white cursor-crosshair block"
-        />
+      <div className="relative">
+        <div className={`border-4 border-dashed rounded-xl overflow-hidden ${errorMessage ? "border-red-400" : "border-slate-400"}`}>
+          <canvas
+            ref={canvasRef}
+            width={280}
+            height={280}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            className="bg-white cursor-crosshair block"
+          />
+        </div>
+        {errorMessage && (
+          <div className="absolute -bottom-8 left-0 right-0 text-center text-red-500 font-bold text-sm animate-bounce">
+            {errorMessage}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 mt-4">
