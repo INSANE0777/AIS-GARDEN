@@ -53,8 +53,8 @@ export default function GardenDisplay({ plantedDrawings, onGardenClick, isPlanti
               top: `${drawing.y}%`,
               transform:
                 hoveredFlowerId === drawing.id ? "translate(-50%, -50%) scale(1.25)" : "translate(-50%, -50%) scale(1)",
-              width: "60px",
-              height: "60px",
+              width: "120px",
+              height: "120px",
               pointerEvents: "auto",
               cursor: "pointer",
             }}
